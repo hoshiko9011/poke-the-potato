@@ -47,6 +47,11 @@ const MAX_PARTICLES = 80;
 const MAX_DPR = 3;
 const POKE_REACH = 70;
 
+const MOOD_LABELS = ["Calm", "Wary", "Annoyed", "Furious", "Meltdown"] as const;
+const MOOD_COLORS = ["bg-[#9ed37a]", "bg-[#9ed37a]", "bg-[#f0c96a]", "bg-[#e8896a]", "bg-[#e45c4c]"];
+const RAPID_POKE_MS = 1800;
+const PATIENCE_SEGMENTS = 5;
+
 type Rgb = [number, number, number];
 
 const CALM_COLORS: Rgb[] = [
@@ -730,11 +735,22 @@ export function PotatoStage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const styleRef = useRef<StyleId>("soft");
   const [style, setStyle] = useState<StyleId>("soft");
+  const [pokes, setPokes] = useState(0);
+  const [heat, setHeat] = useState(0);
+  const lastPokeRef = useRef(0);
 
   const chooseStyle = (next: StyleId) => {
     styleRef.current = next;
     setStyle(next);
   };
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (performance.now() - lastPokeRef.current < RAPID_POKE_MS) return;
+      setHeat((current) => (current > 0 ? current - 1 : 0));
+    }, 900);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -784,6 +800,12 @@ export function PotatoStage() {
       const dx = state.littleX - centerX;
       const dy = state.littleY - centerY;
       if (Math.hypot(dx, dy) > radius + POKE_REACH) return;
+
+      const now = performance.now();
+      const rapid = now - lastPokeRef.current < RAPID_POKE_MS;
+      lastPokeRef.current = now;
+      setPokes((count) => count + 1);
+      setHeat((current) => Math.min(MOOD_LABELS.length - 1, (rapid ? current : 0) + 1));
 
       state.anger = 1;
       state.flash = 1;
@@ -950,15 +972,41 @@ export function PotatoStage() {
 
   const hintColor =
     style === "ink" || style === "sticker" ? "rgba(60, 40, 24, 0.65)" : "rgba(255, 236, 214, 0.78)";
+  const patience = PATIENCE_SEGMENTS - heat;
 
   return (
     <div className="relative h-full w-full">
       <canvas
         ref={canvasRef}
         className="block h-full w-full touch-none select-none"
-        aria-label="A big potato hanging from a string. Move the little potato near it and poke it."
+        aria-label="A big potato hanging from a string. Move the little potato near it and poke it. Pokes make it cross."
         role="img"
       />
+
+      <div
+        data-ui
+        className="absolute left-3 z-10 select-none rounded-2xl bg-black/35 px-3 py-2 text-white shadow-sm backdrop-blur-sm"
+        style={{ top: "calc(5rem + env(safe-area-inset-top))" }}
+      >
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-lg leading-none font-semibold tabular-nums">{pokes}</span>
+          <span className="text-[10px] tracking-[0.16em] text-white/65 uppercase">pokes</span>
+        </div>
+        <div className="mt-2 flex gap-1" aria-hidden>
+          {Array.from({ length: PATIENCE_SEGMENTS }, (_, index) => (
+            <span
+              key={index}
+              className={`h-1.5 w-3.5 rounded-full transition-colors ${
+                index < patience ? MOOD_COLORS[heat] : "bg-white/20"
+              }`}
+            />
+          ))}
+        </div>
+        <div className="mt-1 flex items-center gap-1.5 text-[10px] tracking-[0.16em] text-white/70 uppercase">
+          <span className={`h-1.5 w-1.5 rounded-full ${MOOD_COLORS[heat]}`} />
+          <span aria-live="polite">{MOOD_LABELS[heat]}</span>
+        </div>
+      </div>
 
       <div
         data-ui
