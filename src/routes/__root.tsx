@@ -1,4 +1,5 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
+import { PotatoCursor } from "@/components/PotatoCursor";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Poke the Potato";
@@ -44,6 +45,7 @@ export const Route = createRootRoute({
       </head>
       <body>
         <Outlet />
+        <PotatoCursor />
         <Scripts />
       </body>
     </html>

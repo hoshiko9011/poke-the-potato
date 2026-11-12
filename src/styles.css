@@ -23,6 +23,12 @@
     min-height: 100%;
   }
 
+  /* The custom cursor is a DOM element, so the system pointer is hidden everywhere. */
+  html.custom-cursor,
+  html.custom-cursor * {
+    cursor: none !important;
+  }
+
   html.game-mode,
   html.game-mode body {
     height: 100%;
