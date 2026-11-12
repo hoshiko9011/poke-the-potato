@@ -52,6 +52,14 @@ const MOOD_COLORS = ["bg-[#9ed37a]", "bg-[#9ed37a]", "bg-[#f0c96a]", "bg-[#e8896
 const RAPID_POKE_MS = 1800;
 const PATIENCE_SEGMENTS = 5;
 
+const REACTIONS = [
+  ["eep!", "hey!", "boing!"],
+  ["hey!", "watch it!", "oh!"],
+  ["ow!", "rude!", "hmph!"],
+  ["stop it!", "grr!", "enough!"],
+  ["MELTDOWN!", "I'm a potato!", "no more!"],
+];
+
 type Rgb = [number, number, number];
 
 const CALM_COLORS: Rgb[] = [
@@ -75,6 +83,13 @@ type Particle = {
   color: string;
 };
 
+type Bubble = {
+  x: number;
+  y: number;
+  life: number;
+  text: string;
+};
+
 type StageState = {
   width: number;
   height: number;
@@ -88,6 +103,7 @@ type StageState = {
   lookY: number;
   ready: boolean;
   particles: Particle[];
+  bubbles: Bubble[];
 };
 
 type PotatoStyle = (
@@ -710,6 +726,98 @@ const POTATO_STYLES: Record<StyleId, PotatoStyle> = {
   ink: drawInk,
 };
 
+function drawSpeechBubble(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  alpha: number,
+  variant: StyleId,
+  stageWidth: number,
+) {
+  const paper = variant === "ink" || variant === "sticker";
+  const fontSize = 15;
+  const height = 30;
+  const radius = 12;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.font = `600 ${fontSize}px "Segoe UI", system-ui, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const width = Math.ceil(ctx.measureText(text).width) + 22;
+  const bx = Math.max(8, Math.min(x - width / 2, stageWidth - width - 8));
+  const by = y - height;
+  const tx = Math.max(bx + 16, Math.min(x, bx + width - 16));
+
+  ctx.beginPath();
+  ctx.moveTo(bx + radius, by);
+  ctx.lineTo(bx + width - radius, by);
+  ctx.quadraticCurveTo(bx + width, by, bx + width, by + radius);
+  ctx.lineTo(bx + width, by + height - radius);
+  ctx.quadraticCurveTo(bx + width, by + height, bx + width - radius, by + height);
+  ctx.lineTo(tx + 7, by + height);
+  ctx.lineTo(tx, by + height + 9);
+  ctx.lineTo(tx - 7, by + height);
+  ctx.lineTo(bx + radius, by + height);
+  ctx.quadraticCurveTo(bx, by + height, bx, by + height - radius);
+  ctx.lineTo(bx, by + radius);
+  ctx.quadraticCurveTo(bx, by, bx + radius, by);
+  ctx.closePath();
+
+  ctx.fillStyle = paper ? "#fffdf6" : "#2b1a10";
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = paper ? "rgba(43, 26, 16, 0.9)" : "rgba(255, 246, 230, 0.35)";
+  ctx.stroke();
+
+  ctx.fillStyle = paper ? "#2b1a10" : "#fff6e6";
+  ctx.fillText(text, bx + width / 2, by + height / 2 + 0.5);
+  ctx.restore();
+}
+
+function drawSteam(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  anger: number,
+  time: number,
+  variant: StyleId,
+) {
+  if (anger < 0.55) return;
+  const strength = (anger - 0.55) / 0.45;
+
+  for (const side of [-1, 1]) {
+    for (let index = 0; index < 2; index++) {
+      const phase = (time * 0.00022 + index * 0.5 + (side === 1 ? 0.25 : 0)) % 1;
+      const puffX = cx + side * radius * (0.52 + phase * 0.2);
+      const puffY = cy - radius * (0.75 + phase * 0.45);
+      const puffR = radius * (0.05 + phase * 0.045);
+
+      ctx.save();
+      ctx.globalAlpha = strength * (1 - phase) * 0.85;
+      if (variant === "pixel") {
+        const block = Math.max(3, Math.round(radius / 18));
+        ctx.fillStyle = "#fff6e6";
+        ctx.fillRect(Math.round(puffX), Math.round(puffY), block * 2, block * 2);
+      } else {
+        ctx.beginPath();
+        ctx.ellipse(puffX, puffY, puffR, puffR * 0.82, 0, 0, Math.PI * 2);
+        ctx.fillStyle = variant === "ink" ? "rgba(255, 255, 255, 0.7)" : "#fffaf0";
+        ctx.fill();
+        if (variant === "ink") {
+          ctx.strokeStyle = "rgba(42, 33, 24, 0.45)";
+          ctx.lineWidth = Math.max(1.2, radius * 0.012);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+  }
+}
+
 function isUiTarget(target: EventTarget | null) {
   return target instanceof Element && target.closest("[data-ui]") !== null;
 }
@@ -771,9 +879,11 @@ export function PotatoStage() {
       lookY: 0,
       ready: false,
       particles: [],
+      bubbles: [],
     };
 
     let frame = 0;
+    let streak = 0;
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -804,8 +914,21 @@ export function PotatoStage() {
       const now = performance.now();
       const rapid = now - lastPokeRef.current < RAPID_POKE_MS;
       lastPokeRef.current = now;
+      streak = rapid ? Math.min(MOOD_LABELS.length - 1, streak + 1) : 1;
       setPokes((count) => count + 1);
-      setHeat((current) => Math.min(MOOD_LABELS.length - 1, (rapid ? current : 0) + 1));
+      setHeat(streak);
+
+      const lines = REACTIONS[streak];
+      const topBubble = state.bubbles.reduce((lowest, bubble) => Math.min(lowest, bubble.y), Infinity);
+      state.bubbles.push({
+        x: state.littleX,
+        y: Number.isFinite(topBubble)
+          ? topBubble - 34
+          : state.littleY - LITTLE_RADIUS - 10,
+        life: 1,
+        text: lines[Math.floor(Math.random() * lines.length)],
+      });
+      if (state.bubbles.length > 3) state.bubbles.shift();
 
       state.anger = 1;
       state.flash = 1;
@@ -935,6 +1058,8 @@ export function PotatoStage() {
       }
       ctx.restore();
 
+      drawSteam(ctx, centerX, centerY, radius, state.anger, now, currentStyle);
+
       for (let i = state.particles.length - 1; i >= 0; i--) {
         const particle = state.particles[i];
         particle.x += particle.vx;
@@ -952,6 +1077,25 @@ export function PotatoStage() {
       }
 
       drawPotato(ctx, state.littleX, state.littleY, LITTLE_RADIUS, 0, 0, 0, now);
+
+      for (let i = state.bubbles.length - 1; i >= 0; i--) {
+        const bubble = state.bubbles[i];
+        bubble.y -= 0.32;
+        bubble.life -= 0.012;
+        if (bubble.life <= 0) {
+          state.bubbles.splice(i, 1);
+          continue;
+        }
+        drawSpeechBubble(
+          ctx,
+          bubble.text,
+          bubble.x,
+          bubble.y,
+          Math.min(1, bubble.life * 3),
+          currentStyle,
+          width,
+        );
+      }
 
       frame = requestAnimationFrame(render);
     };
