@@ -31,6 +31,17 @@ const SPOTS = [
   { x: -0.38, y: 0.48, rx: 0.07, ry: 0.05, rot: -0.2, alpha: 0.3 },
 ];
 
+const FRECKLES = [
+  { x: -0.36, y: 0.14, r: 0.016 },
+  { x: -0.28, y: 0.07, r: 0.011 },
+  { x: -0.2, y: 0.2, r: 0.013 },
+  { x: 0.34, y: 0.13, r: 0.015 },
+  { x: 0.27, y: 0.21, r: 0.01 },
+  { x: 0.41, y: 0.05, r: 0.011 },
+  { x: -0.44, y: -0.22, r: 0.012 },
+  { x: 0.12, y: 0.36, r: 0.011 },
+];
+
 const LITTLE_RADIUS = 22;
 const MAX_PARTICLES = 80;
 const MAX_DPR = 3;
@@ -82,6 +93,7 @@ type PotatoStyle = (
   anger: number,
   lookX: number,
   lookY: number,
+  time: number,
 ) => void;
 
 function lerp(from: number, to: number, t: number) {
@@ -102,14 +114,110 @@ function fillEllipse(ctx: CanvasRenderingContext2D, x: number, y: number, rx: nu
   ctx.fill();
 }
 
-const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY) => {
+function potatoPath(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  seed: number,
+) {
+  const points = 44;
+  ctx.beginPath();
+  for (let i = 0; i <= points; i++) {
+    const angle = (i / points) * Math.PI * 2;
+    const lump =
+      1 +
+      Math.sin(angle * 3 + seed) * 0.03 +
+      Math.sin(angle * 5 - seed * 1.6) * 0.018 +
+      Math.sin(angle * 2 + 0.7) * 0.02;
+    const x = cx + Math.cos(angle) * radius * 0.96 * lump;
+    const y = cy + Math.sin(angle) * radius * 1.02 * lump;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+}
+
+function drawSprout(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  variant: StyleId,
+  time: number,
+) {
+  const sway = Math.sin(time * 0.0016) * 0.07;
+  const stemHeight = radius * 0.32;
+  const leafW = radius * 0.24;
+  const leafH = radius * 0.125;
+
+  const palette =
+    variant === "ink"
+      ? { leaf: "#d3e2ac", shade: "#aec48d", stem: "#4a5a36", line: "#2a2118" }
+      : variant === "pixel"
+        ? { leaf: "#7fb057", shade: "#5f8f42", stem: "#4d7a39", line: "#2f4a26" }
+        : { leaf: "#8cc45f", shade: "#5f9444", stem: "#4d7a39", line: "#33502a" };
+
+  ctx.save();
+  ctx.translate(cx + radius * 0.12, cy - radius * 0.88);
+  ctx.rotate(-0.16 + sway);
+
+  ctx.lineCap = "round";
+  ctx.strokeStyle = palette.stem;
+  ctx.lineWidth = Math.max(2, radius * 0.032);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(radius * 0.05, -stemHeight * 0.55, radius * 0.02, -stemHeight);
+  ctx.stroke();
+
+  const drawLeaf = (side: number, scale: number) => {
+    ctx.save();
+    ctx.translate(radius * 0.02, -stemHeight);
+    ctx.rotate(side * (0.55 + sway * 0.4));
+    ctx.beginPath();
+    ctx.ellipse(side * leafW * 0.62 * scale, -leafH * 0.35 * scale, leafW * scale, leafH * scale, 0, 0, Math.PI * 2);
+    ctx.fillStyle = palette.leaf;
+    ctx.fill();
+    if (variant !== "soft") {
+      ctx.strokeStyle = palette.line;
+      ctx.lineWidth = variant === "sticker" ? Math.max(2.5, radius * 0.04) : Math.max(1.4, radius * 0.018);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(side * leafW * 0.2 * scale, -leafH * 0.35 * scale);
+    ctx.quadraticCurveTo(
+      side * leafW * 0.7 * scale,
+      -leafH * 0.4 * scale,
+      side * leafW * 1.12 * scale,
+      -leafH * 0.32 * scale,
+    );
+    ctx.strokeStyle = palette.shade;
+    ctx.lineWidth = Math.max(1, radius * 0.012);
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  drawLeaf(-1, 1);
+  drawLeaf(1, 0.82);
+  ctx.restore();
+}
+
+const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) => {
   const top = mixRgb(CALM_COLORS[0], ANGRY_COLORS[0], anger);
   const middle = mixRgb(CALM_COLORS[1], ANGRY_COLORS[1], anger);
   const bottom = mixRgb(CALM_COLORS[2], ANGRY_COLORS[2], anger);
 
   ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  potatoPath(ctx, cx, cy, radius, 0.7);
+  ctx.shadowColor = "rgba(24, 12, 4, 0.4)";
+  ctx.shadowBlur = radius * 0.24;
+  ctx.shadowOffsetY = radius * 0.08;
+  ctx.fillStyle = "rgba(28, 15, 7, 0.8)";
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  potatoPath(ctx, cx, cy, radius, 0.7);
   ctx.clip();
 
   const skin = ctx.createRadialGradient(
@@ -131,7 +239,7 @@ const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY) => {
     ctx.translate(cx + spot.x * radius, cy + spot.y * radius);
     ctx.rotate(spot.rot);
     const shade = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(spot.rx, spot.ry) * radius);
-    shade.addColorStop(0, `rgba(120, 72, 36, ${spot.alpha})`);
+    shade.addColorStop(0, `rgba(120, 72, 36, ${spot.alpha * 0.5})`);
     shade.addColorStop(1, "rgba(120, 72, 36, 0)");
     ctx.fillStyle = shade;
     ctx.beginPath();
@@ -139,10 +247,33 @@ const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY) => {
     ctx.fill();
     ctx.restore();
   }
+
+  for (const freckle of FRECKLES) {
+    ctx.fillStyle = "rgba(92, 54, 26, 0.34)";
+    fillEllipse(
+      ctx,
+      cx + freckle.x * radius,
+      cy + freckle.y * radius,
+      freckle.r * radius,
+      freckle.r * radius * 0.86,
+    );
+  }
+
+  const sheen = ctx.createRadialGradient(
+    cx - radius * 0.44,
+    cy - radius * 0.5,
+    radius * 0.02,
+    cx - radius * 0.3,
+    cy - radius * 0.36,
+    radius * 0.95,
+  );
+  sheen.addColorStop(0, "rgba(255, 246, 224, 0.3)");
+  sheen.addColorStop(0.5, "rgba(255, 238, 205, 0)");
+  ctx.fillStyle = sheen;
+  ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
   ctx.restore();
 
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius - 1.2, 0, Math.PI * 2);
+  potatoPath(ctx, cx, cy, radius, 0.7);
   ctx.strokeStyle = "rgba(62, 38, 22, 0.72)";
   ctx.lineWidth = Math.max(2, radius * 0.028);
   ctx.stroke();
@@ -248,9 +379,11 @@ const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY) => {
     cy + radius * 0.32,
   );
   ctx.stroke();
+
+  drawSprout(ctx, cx, cy, radius, "soft", time);
 };
 
-const drawPixel: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY) => {
+const drawPixel: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) => {
   const block = Math.max(3, Math.round(radius / 11));
 
   ctx.fillStyle = anger > 0.4 ? "#e07a4a" : "#d4a05a";
@@ -294,9 +427,11 @@ const drawPixel: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY) => {
   );
   ctx.fillRect(cx - radius * 0.32, cy + radius * 0.18, block, block);
   ctx.fillRect(cx + radius * 0.22, cy + radius * 0.18, block, block);
+
+  drawSprout(ctx, cx, cy, radius, "pixel", time);
 };
 
-const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, _lookY) => {
+const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, _lookY, time) => {
   ctx.save();
   ctx.translate(4, 6);
   ctx.beginPath();
@@ -356,13 +491,15 @@ const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, _lookY) => 
     ctx.quadraticCurveTo(cx, cy + radius * 0.42, cx + radius * 0.22, cy + radius * 0.28);
   }
   ctx.stroke();
+
+  drawSprout(ctx, cx, cy, radius, "sticker", time);
 };
 
 function inkWobble(angle: number) {
   return Math.sin(angle * 12.3) * 0.012 + Math.sin(angle * 4.1) * 0.008;
 }
 
-const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY) => {
+const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) => {
   ctx.save();
   ctx.beginPath();
   for (let i = 0; i <= 48; i++) {
@@ -466,6 +603,7 @@ const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY) => {
     cy + radius * 0.28,
   );
   ctx.stroke();
+  drawSprout(ctx, cx, cy, radius, "ink", time);
   ctx.restore();
 };
 
@@ -661,18 +799,28 @@ export function PotatoStage() {
       if (state.anger < 0.012) state.anger = 0;
       state.flash *= 0.9;
 
+      const now = performance.now();
+      const sway =
+        Math.sin(now * 0.0011) * 0.018 +
+        Math.sin(now * 0.00063 + 1.7) * 0.01 +
+        Math.sin(now * 0.045) * 0.03 * state.anger;
       const ropeWidth = currentStyle === "pixel" ? 16 : 22;
-      ctx.fillStyle = paper ? "#6b5344" : "#3a2618";
-      ctx.fillRect(centerX - ropeWidth / 2, 0, ropeWidth, centerY - radius + 2);
 
-      drawPotato(ctx, centerX, centerY, radius, state.anger, state.lookX, state.lookY);
+      ctx.save();
+      ctx.translate(centerX, 0);
+      ctx.rotate(sway);
+      ctx.fillStyle = paper ? "#6b5344" : "#3a2618";
+      ctx.fillRect(-ropeWidth / 2, 0, ropeWidth, centerY - radius + 2);
+
+      drawPotato(ctx, 0, centerY, radius, state.anger, state.lookX, state.lookY, now);
 
       if (state.flash > 0.05) {
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.arc(0, centerY, radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${state.flash * 0.28})`;
         ctx.fill();
       }
+      ctx.restore();
 
       for (let i = state.particles.length - 1; i >= 0; i--) {
         const particle = state.particles[i];
@@ -690,7 +838,7 @@ export function PotatoStage() {
         ctx.globalAlpha = 1;
       }
 
-      drawPotato(ctx, state.littleX, state.littleY, LITTLE_RADIUS, 0, 0, 0);
+      drawPotato(ctx, state.littleX, state.littleY, LITTLE_RADIUS, 0, 0, 0, now);
 
       frame = requestAnimationFrame(render);
     };
