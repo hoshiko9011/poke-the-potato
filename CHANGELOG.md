@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.0 – A proper website (2026-11-12)
+
+- Added a landing page at `/` with hero, style showcase, game details, and how-to-play sections
+- Moved the game itself to `/play` and pointed the PWA start URL there
+- Scoped full-screen scroll locking to the game so the landing page scrolls normally
+- Moved screenshots into `public/` so production builds serve them correctly
+- Added a clean HUD-free hero screenshot
+
 ## v1.3.0 – Poke harder (2026-11-12)
 
 - Added a poke counter and a five-segment patience meter, with Calm → Meltdown moods
