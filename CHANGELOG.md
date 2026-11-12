@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.3.0 – Poke harder (2026-11-12)
+
+- Added a poke counter and a five-segment patience meter, with Calm → Meltdown moods
+- Rapid pokes (within 1.8s) build a streak; patience refills once you stop
+- The potato now talks: reaction speech bubbles float up and fade
+- Gave the potato a wobbly, hand-drawn silhouette instead of a plain oval
+- Redrew every face: brows that tilt with anger, layered glossy eyes, blush, teeth, tongues
+- Each style got its own sprout, plus freckles and blemishes placed clear of the face
+- Steam puffs and a twitchy sway appear when the potato loses its temper
+- The small potato now has eyes that follow you and a faint sparkle trail
+- Added drifting background motes in both light and dark moods
+
 ## v1.2.0 – Standalone potato (2026-11-12)
 
 - Restored the missing canvas engine (the four art styles, poke reaction, particles, and gaze)
