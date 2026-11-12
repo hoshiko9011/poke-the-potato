@@ -85,6 +85,32 @@ waiting. Switching moods is instant, and the whole potato is redrawn every frame
 The big potato only reacts when the little one is within poking distance. It has boundaries. It
 also has a flash, a puff of particles, and a short haptic buzz on supported phones.
 
+## Keeping score
+
+The counter in the corner is not decorative. Every poke is counted, and the five-segment meter
+above it tracks the potato's patience:
+
+| Mood       | What it means                                      |
+| ---------- | -------------------------------------------------- |
+| Calm       | All five segments. Fresh potato, fresh start.       |
+| Wary       | One poke in. It noticed you.                        |
+| Annoyed    | Two in a row. The eyebrows are doing something.     |
+| Furious    | Three. Steam is now canonically part of the design. |
+| Meltdown   | Four or more. Speech bubbles turn honest.           |
+
+Pokes within about **1.8 seconds** of each other count as a streak. Stop poking, and the meter
+slowly refills on its own. The potato is forgiving, eventually.
+
+## Little details
+
+- The big potato is not a perfect oval — its silhouette wobbles through 44 hand-placed points, so no two frames are quite alike.
+- Each of the four moods has its own sprout, shading, and facial features, including brows that tilt further with every poke.
+- Pokes spawn a speech bubble ("eep!", "rude!", "stop it!", "I'm a potato!") that floats up and fades.
+- Past three pokes, steam puffs rise from the potato and the swaying gets twitchy.
+- The small potato watches your cursor, leaves a faint sparkle trail when it moves, and has its own tiny face.
+- Warm background motes drift upward in every mood, subtle on paper styles, brighter on the dark ones.
+- Everything is drawn per frame on a single canvas — no sprite sheets, no images, no loading spinner.
+
 ## Run it locally
 
 ```bash
