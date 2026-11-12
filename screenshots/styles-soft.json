@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Poke the Potato",
+      "hasCanvas": true,
+      "bodyTextLen": 22,
+      "bodyTextHash": "841cd3778279f8068c33f36bb3fc66725426be9eca5641311fd4709ad74e8700",
+      "bodyTextPrefix": "Soft Pixel Sticker Ink",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/styles-soft.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Poke the Potato",
+      "hasCanvas": true,
+      "bodyTextLen": 22,
+      "bodyTextHash": "841cd3778279f8068c33f36bb3fc66725426be9eca5641311fd4709ad74e8700",
+      "bodyTextPrefix": "Soft Pixel Sticker Ink",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/styles-soft-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/styles-soft.json"
+}
