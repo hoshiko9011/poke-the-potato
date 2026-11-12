@@ -278,107 +278,115 @@ const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =
   ctx.lineWidth = Math.max(2, radius * 0.028);
   ctx.stroke();
 
-  const eyeShiftX = lookX * radius * 0.05;
-  const eyeShiftY = lookY * radius * 0.035;
-  const eyeY = cy - radius * 0.08 + eyeShiftY;
-
-  if (anger < 0.4) {
-    ctx.fillStyle = "#fff8f0";
-    fillEllipse(ctx, cx - radius * 0.26 + eyeShiftX, eyeY, radius * 0.16, radius * 0.17);
-    fillEllipse(ctx, cx + radius * 0.26 + eyeShiftX, eyeY, radius * 0.16, radius * 0.17);
-
-    ctx.fillStyle = "#3a2416";
-    ctx.beginPath();
-    ctx.arc(
-      cx - radius * 0.24 + eyeShiftX * 1.4,
-      eyeY + radius * 0.02,
-      radius * 0.075,
-      0,
-      Math.PI * 2,
-    );
-    ctx.arc(
-      cx + radius * 0.28 + eyeShiftX * 1.4,
-      eyeY + radius * 0.02,
-      radius * 0.075,
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
-
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(
-      cx - radius * 0.215 + eyeShiftX * 1.4,
-      eyeY - radius * 0.01,
-      radius * 0.028,
-      0,
-      Math.PI * 2,
-    );
-    ctx.arc(
-      cx + radius * 0.305 + eyeShiftX * 1.4,
-      eyeY - radius * 0.01,
-      radius * 0.028,
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
-  } else {
-    for (const side of [-1, 1]) {
-      ctx.save();
-      ctx.translate(cx + side * radius * 0.26 + eyeShiftX * 0.5, eyeY);
-      ctx.rotate(side * 0.22);
-      ctx.fillStyle = "#fff8f0";
-      fillEllipse(ctx, 0, 0, radius * 0.15, radius * 0.13);
-      ctx.fillStyle = "#3a2416";
-      ctx.beginPath();
-      ctx.ellipse(
-        side * radius * 0.02,
-        radius * 0.015,
-        radius * 0.07,
-        radius * 0.055,
-        0,
-        0,
-        Math.PI * 2,
-      );
-      ctx.fill();
-      ctx.restore();
-    }
-  }
-
-  ctx.fillStyle = `rgba(232, 120, 96, ${0.28 - anger * 0.08})`;
-  ctx.beginPath();
-  ctx.ellipse(
-    cx - radius * 0.42,
-    cy + radius * 0.12,
-    radius * 0.1,
-    radius * 0.055,
-    0,
-    0,
-    Math.PI * 2,
-  );
-  ctx.ellipse(
-    cx + radius * 0.42,
-    cy + radius * 0.12,
-    radius * 0.1,
-    radius * 0.055,
-    0,
-    0,
-    Math.PI * 2,
-  );
-  ctx.fill();
+  const eyeShiftX = lookX * radius * 0.045;
+  const eyeShiftY = lookY * radius * 0.03;
+  const eyeY = cy - radius * 0.06 + eyeShiftY;
+  const eyeRadius = radius * 0.15;
 
   ctx.strokeStyle = "#4a2e1c";
-  ctx.lineWidth = Math.max(3, radius * 0.04);
+  ctx.lineWidth = Math.max(2, radius * 0.03);
   ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(cx - radius * 0.2, cy + radius * 0.32);
-  ctx.quadraticCurveTo(
-    cx,
-    cy + radius * (0.39 + anger * 0.05),
-    cx + radius * 0.2,
-    cy + radius * 0.32,
-  );
-  ctx.stroke();
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.translate(cx + side * radius * 0.26 + eyeShiftX * 0.4, eyeY - radius * 0.27);
+    ctx.rotate(-side * (0.12 + anger * 0.55));
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.13, radius * 0.03);
+    ctx.quadraticCurveTo(0, -radius * 0.05, radius * 0.13, radius * 0.03);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.translate(cx + side * radius * 0.26 + eyeShiftX, eyeY);
+    ctx.rotate(side * 0.04);
+
+    ctx.fillStyle = "#fff8ee";
+    fillEllipse(ctx, 0, 0, eyeRadius, eyeRadius * 1.08);
+
+    const irisR = eyeRadius * (0.68 - anger * 0.14);
+    const iris = ctx.createRadialGradient(
+      -eyeRadius * 0.1,
+      -eyeRadius * 0.14,
+      eyeRadius * 0.04,
+      0,
+      0,
+      irisR,
+    );
+    iris.addColorStop(0, "#946035");
+    iris.addColorStop(1, "#382213");
+    ctx.fillStyle = iris;
+    fillEllipse(ctx, 0, eyeRadius * 0.05, irisR, irisR * 1.04);
+
+    ctx.fillStyle = "#20120a";
+    fillEllipse(ctx, 0, eyeRadius * 0.07, irisR * 0.5, irisR * 0.56);
+
+    ctx.fillStyle = "#fff";
+    fillEllipse(
+      ctx,
+      -eyeRadius * 0.28,
+      -eyeRadius * 0.16,
+      eyeRadius * 0.17,
+      eyeRadius * 0.17,
+    );
+    fillEllipse(ctx, eyeRadius * 0.26, eyeRadius * 0.24, eyeRadius * 0.085, eyeRadius * 0.085);
+
+    ctx.strokeStyle = "rgba(74, 42, 24, 0.35)";
+    ctx.lineWidth = Math.max(1.4, radius * 0.013);
+    ctx.beginPath();
+    ctx.arc(0, 0, eyeRadius * 1.07, Math.PI * 0.16, Math.PI * 0.84);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  for (const side of [-1, 1]) {
+    const blushX = cx + side * radius * 0.41;
+    const blushY = cy + radius * 0.14;
+    const blush = ctx.createRadialGradient(blushX, blushY, 0, blushX, blushY, radius * 0.16);
+    blush.addColorStop(0, `rgba(226, 108, 88, ${0.3 + anger * 0.16})`);
+    blush.addColorStop(1, "rgba(226, 108, 88, 0)");
+    ctx.fillStyle = blush;
+    fillEllipse(ctx, blushX, blushY, radius * 0.17, radius * 0.1);
+  }
+
+  ctx.strokeStyle = "#4a2a18";
+  ctx.lineWidth = Math.max(2.5, radius * 0.036);
+  ctx.lineCap = "round";
+  if (anger < 0.4) {
+    ctx.beginPath();
+    ctx.moveTo(cx - radius * 0.16, cy + radius * 0.27);
+    ctx.quadraticCurveTo(cx - radius * 0.08, cy + radius * 0.36, cx, cy + radius * 0.29);
+    ctx.quadraticCurveTo(cx + radius * 0.08, cy + radius * 0.36, cx + radius * 0.16, cy + radius * 0.27);
+    ctx.stroke();
+  } else {
+    const openness = Math.min(1, (anger - 0.4) / 0.6);
+    ctx.beginPath();
+    ctx.moveTo(cx - radius * 0.2, cy + radius * 0.24);
+    ctx.quadraticCurveTo(cx, cy + radius * 0.3, cx + radius * 0.2, cy + radius * 0.24);
+    ctx.quadraticCurveTo(
+      cx + radius * 0.05,
+      cy + radius * (0.4 + 0.12 * openness),
+      cx - radius * 0.2,
+      cy + radius * 0.24,
+    );
+    ctx.closePath();
+    ctx.fillStyle = "#5c2418";
+    ctx.fill();
+
+    ctx.fillStyle = "#e08078";
+    ctx.beginPath();
+    ctx.ellipse(
+      cx,
+      cy + radius * (0.34 + 0.08 * openness),
+      radius * 0.075,
+      radius * 0.038,
+      0,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  }
 
   drawSprout(ctx, cx, cy, radius, "soft", time);
 };
@@ -390,48 +398,65 @@ const drawPixel: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) 
   for (let y = -radius; y <= radius; y += block) {
     for (let x = -radius; x <= radius; x += block) {
       if (x * x + y * y <= (radius - block * 0.2) * (radius - block * 0.2)) {
-        ctx.fillRect(cx + x, cy + y, block, block);
+        ctx.fillRect(Math.round(cx + x), Math.round(cy + y), block, block);
       }
     }
   }
 
   ctx.fillStyle = "#a56b32";
   for (const [x, y] of [
-    [-0.35, 0.1],
-    [0.4, -0.15],
-    [-0.15, 0.42],
-    [0.25, 0.35],
+    [-0.68, 0.28],
+    [0.64, -0.3],
+    [-0.58, -0.38],
+    [0.52, 0.47],
   ]) {
-    ctx.fillRect(cx + x * radius, cy + y * radius, block * 2, block * 2);
+    ctx.fillRect(Math.round(cx + x * radius), Math.round(cy + y * radius), block * 2, block * 2);
   }
 
-  const shiftX = Math.round(lookX) * block;
-  const shiftY = Math.round(lookY * 0.4) * block;
+  const b = block;
+  const gx = Math.round(cx / b) * b;
+  const gy = Math.round(cy / b) * b;
+  const eyeShift = Math.round(lookX) * b;
+  const eyeDrop = Math.round(lookY * 0.5) * b;
+  const px = (units: number) => gx + units * b;
+  const py = (units: number) => gy + units * b;
+
+  ctx.fillStyle = anger > 0.4 ? "#c46a4c" : "#d28f66";
+  ctx.fillRect(px(-4), py(2), b, b);
+  ctx.fillRect(px(3), py(2), b, b);
+
   ctx.fillStyle = "#1a120c";
+  ctx.fillRect(px(-4) + eyeShift, py(-2) + eyeDrop, 2 * b, 2 * b);
+  ctx.fillRect(px(2) + eyeShift, py(-2) + eyeDrop, 2 * b, 2 * b);
+  ctx.fillStyle = "#fff6e6";
+  ctx.fillRect(px(-4) + eyeShift, py(-2) + eyeDrop, b, b);
+  ctx.fillRect(px(2) + eyeShift, py(-2) + eyeDrop, b, b);
 
   if (anger < 0.4) {
-    ctx.fillRect(cx - radius * 0.38 + shiftX, cy - radius * 0.12 + shiftY, block * 2, block * 2);
-    ctx.fillRect(cx + radius * 0.12 + shiftX, cy - radius * 0.12 + shiftY, block * 2, block * 2);
+    ctx.fillStyle = "#3a2414";
+    ctx.fillRect(px(-4) + eyeShift, py(-4) + eyeDrop, 2 * b, b);
+    ctx.fillRect(px(2) + eyeShift, py(-4) + eyeDrop, 2 * b, b);
+    ctx.fillStyle = "#20120a";
+    ctx.fillRect(px(-3), py(2), b, b);
+    ctx.fillRect(px(2), py(2), b, b);
+    ctx.fillRect(px(-2), py(3), b, b);
+    ctx.fillRect(px(-1), py(3), b, b);
+    ctx.fillRect(px(0), py(3), b, b);
+    ctx.fillRect(px(1), py(3), b, b);
   } else {
-    ctx.fillRect(cx - radius * 0.42, cy - radius * 0.22, block * 3, block);
-    ctx.fillRect(cx + radius * 0.08, cy - radius * 0.22, block * 3, block);
-    ctx.fillRect(cx - radius * 0.32, cy - radius * 0.08, block * 2, block);
-    ctx.fillRect(cx + radius * 0.14, cy - radius * 0.08, block * 2, block);
+    ctx.fillStyle = "#3a2414";
+    ctx.fillRect(px(-5) + eyeShift, py(-4) + eyeDrop, 2 * b, b);
+    ctx.fillRect(px(3) + eyeShift, py(-4) + eyeDrop, 2 * b, b);
+    ctx.fillRect(px(-2), py(2), 4 * b, 2 * b);
+    ctx.fillStyle = "#fff6e6";
+    ctx.fillRect(px(-2), py(2), b, b);
+    ctx.fillRect(px(1), py(2), b, b);
   }
-
-  ctx.fillRect(
-    cx - radius * 0.28,
-    cy + radius * 0.28 + (anger > 0.4 ? block : 0),
-    block * 5,
-    block,
-  );
-  ctx.fillRect(cx - radius * 0.32, cy + radius * 0.18, block, block);
-  ctx.fillRect(cx + radius * 0.22, cy + radius * 0.18, block, block);
 
   drawSprout(ctx, cx, cy, radius, "pixel", time);
 };
 
-const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, _lookY, time) => {
+const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) => {
   ctx.save();
   ctx.translate(4, 6);
   ctx.beginPath();
@@ -450,47 +475,96 @@ const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, _lookY, tim
 
   ctx.fillStyle = anger > 0.4 ? "#d56a48" : "#e0a45a";
   ctx.beginPath();
-  ctx.arc(cx - radius * 0.35, cy + radius * 0.15, radius * 0.16, 0, Math.PI * 2);
-  ctx.arc(cx + radius * 0.38, cy - radius * 0.1, radius * 0.12, 0, Math.PI * 2);
+  ctx.arc(cx - radius * 0.52, cy + radius * 0.32, radius * 0.13, 0, Math.PI * 2);
+  ctx.arc(cx + radius * 0.53, cy + radius * 0.3, radius * 0.1, 0, Math.PI * 2);
   ctx.fill();
 
   const shiftX = lookX * radius * 0.04;
-  const eyeY = cy - radius * 0.06;
-
-  if (anger < 0.4) {
-    ctx.fillStyle = "#2b1a10";
-    ctx.beginPath();
-    ctx.arc(cx - radius * 0.24 + shiftX, eyeY, radius * 0.09, 0, Math.PI * 2);
-    ctx.arc(cx + radius * 0.24 + shiftX, eyeY, radius * 0.09, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(cx - radius * 0.21 + shiftX, eyeY - radius * 0.03, radius * 0.03, 0, Math.PI * 2);
-    ctx.arc(cx + radius * 0.27 + shiftX, eyeY - radius * 0.03, radius * 0.03, 0, Math.PI * 2);
-    ctx.fill();
-  } else {
-    ctx.lineWidth = Math.max(3, radius * 0.06);
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(cx - radius * 0.38, eyeY - radius * 0.06);
-    ctx.lineTo(cx - radius * 0.1, eyeY + radius * 0.02);
-    ctx.moveTo(cx + radius * 0.38, eyeY - radius * 0.06);
-    ctx.lineTo(cx + radius * 0.1, eyeY + radius * 0.02);
-    ctx.stroke();
-  }
+  const shiftY = lookY * radius * 0.025;
+  const eyeY = cy - radius * 0.06 + shiftY;
 
   ctx.strokeStyle = "#2b1a10";
-  ctx.lineWidth = Math.max(3, radius * 0.055);
+  ctx.lineWidth = Math.max(3, radius * 0.045);
   ctx.lineCap = "round";
-  ctx.beginPath();
-  if (anger < 0.4) {
-    ctx.arc(cx, cy + radius * 0.08, radius * 0.22, Math.PI * 0.25, Math.PI * 0.75);
-  } else {
-    ctx.moveTo(cx - radius * 0.22, cy + radius * 0.28);
-    ctx.quadraticCurveTo(cx, cy + radius * 0.42, cx + radius * 0.22, cy + radius * 0.28);
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.translate(cx + side * radius * 0.26 + shiftX * 0.4, eyeY - radius * 0.26);
+    ctx.rotate(-side * (0.08 + anger * 0.6));
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.12, radius * 0.02);
+    ctx.quadraticCurveTo(0, -radius * 0.04, radius * 0.12, radius * 0.02);
+    ctx.stroke();
+    ctx.restore();
   }
-  ctx.stroke();
+
+  for (const side of [-1, 1]) {
+    const blushX = cx + side * radius * 0.42;
+    const blushY = cy + radius * 0.19;
+    const blush = ctx.createRadialGradient(blushX, blushY, 0, blushX, blushY, radius * 0.12);
+    blush.addColorStop(0, `rgba(233, 112, 92, ${0.4 + anger * 0.2})`);
+    blush.addColorStop(1, "rgba(233, 112, 92, 0)");
+    ctx.fillStyle = blush;
+    fillEllipse(ctx, blushX, blushY, radius * 0.12, radius * 0.08);
+  }
+
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.translate(cx + side * radius * 0.24 + shiftX, eyeY);
+    if (anger < 0.4) {
+      ctx.fillStyle = "#fffdf6";
+      fillEllipse(ctx, 0, 0, radius * 0.14, radius * 0.15);
+      ctx.fillStyle = "#2b1a10";
+      fillEllipse(ctx, side * radius * 0.01, radius * 0.01, radius * 0.085, radius * 0.095);
+      ctx.fillStyle = "#fff";
+      fillEllipse(
+        ctx,
+        -radius * 0.035,
+        -radius * 0.045,
+        radius * 0.032,
+        radius * 0.032,
+      );
+      ctx.strokeStyle = "#2b1a10";
+      ctx.lineWidth = Math.max(1.5, radius * 0.02);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, radius * 0.14, radius * 0.15, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    } else {
+      ctx.rotate(side * 0.22);
+      ctx.fillStyle = "#fffdf6";
+      ctx.fillRect(-radius * 0.13, -radius * 0.05, radius * 0.26, radius * 0.1);
+      ctx.fillStyle = "#2b1a10";
+      ctx.fillRect(-radius * 0.025, -radius * 0.05, radius * 0.05, radius * 0.1);
+    }
+    ctx.restore();
+  }
+
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#2b1a10";
+  ctx.lineWidth = Math.max(3, radius * 0.05);
+  if (anger < 0.4) {
+    ctx.beginPath();
+    ctx.arc(cx, cy + radius * 0.14, radius * 0.17, 0, Math.PI);
+    ctx.closePath();
+    ctx.fillStyle = "#5c2418";
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#e08078";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + radius * 0.3, radius * 0.075, radius * 0.04, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(cx - radius * 0.19, cy + radius * 0.24);
+    ctx.quadraticCurveTo(cx, cy + radius * 0.42, cx + radius * 0.19, cy + radius * 0.24);
+    ctx.quadraticCurveTo(cx, cy + radius * 0.2, cx - radius * 0.19, cy + radius * 0.24);
+    ctx.closePath();
+    ctx.fillStyle = "#4a1710";
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#fffdf6";
+    ctx.fillRect(cx - radius * 0.11, cy + radius * 0.235, radius * 0.07, radius * 0.06);
+    ctx.fillRect(cx + radius * 0.04, cy + radius * 0.235, radius * 0.07, radius * 0.06);
+  }
 
   drawSprout(ctx, cx, cy, radius, "sticker", time);
 };
@@ -502,13 +576,19 @@ function inkWobble(angle: number) {
 const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) => {
   ctx.save();
   ctx.beginPath();
-  for (let i = 0; i <= 48; i++) {
-    const angle = (i / 48) * Math.PI * 2;
-    const edge = radius * (1 + inkWobble(i + cx * 0.01));
-    const x = cx + Math.cos(angle) * edge;
-    const y = cy + Math.sin(angle) * edge;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+  const points = 30;
+  const at = (i: number) => {
+    const angle = (i / points) * Math.PI * 2;
+    const edge =
+      radius *
+      (1 + inkWobble(i + cx * 0.01) + Math.sin(i * 0.7 + cy * 0.01) * 0.006);
+    return [cx + Math.cos(angle) * edge, cy + Math.sin(angle) * edge] as const;
+  };
+  for (let i = 0; i < points; i++) {
+    const [ax, ay] = at(i);
+    const [bx, by] = at(i + 1);
+    if (i === 0) ctx.moveTo(ax, ay);
+    ctx.quadraticCurveTo(ax, ay, (ax + bx) / 2, (ay + by) / 2);
   }
   ctx.closePath();
   ctx.fillStyle = anger > 0.4 ? "#f3d2b0" : "#f6e7cf";
@@ -517,11 +597,11 @@ const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =>
   ctx.lineWidth = Math.max(1.5, radius * 0.018);
   ctx.stroke();
 
-  ctx.globalAlpha = 0.35;
+  ctx.globalAlpha = 0.3;
   ctx.beginPath();
   ctx.ellipse(
     cx - radius * 0.3,
-    cy + radius * 0.2,
+    cy + radius * 0.22,
     radius * 0.16,
     radius * 0.22,
     0.4,
@@ -541,68 +621,79 @@ const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =>
   ctx.fill();
   ctx.globalAlpha = 1;
 
-  const eyeShiftX = lookX * radius * 0.03;
-  const eyeY = cy - radius * 0.05 + lookY * radius * 0.02;
+  const eyeShiftX = lookX * radius * 0.035;
+  const eyeY = cy - radius * 0.05 + lookY * radius * 0.025;
 
   ctx.strokeStyle = "#24180f";
   ctx.lineWidth = Math.max(1.6, radius * 0.02);
   ctx.lineCap = "round";
 
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.translate(cx + side * radius * 0.25 + eyeShiftX * 0.4, eyeY - radius * 0.24);
+    ctx.rotate(-side * (0.05 + anger * 0.5));
+    ctx.beginPath();
+    ctx.moveTo(-radius * 0.11, radius * 0.02);
+    ctx.quadraticCurveTo(0, -radius * 0.04, radius * 0.11, radius * 0.02);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  if (anger < 0.4) {
+    for (const side of [-1, 1]) {
+      const ex = cx + side * radius * 0.24 + eyeShiftX;
+      ctx.beginPath();
+      ctx.ellipse(ex, eyeY, radius * 0.085, radius * 0.09, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = "#24180f";
+      fillEllipse(ctx, ex, eyeY + radius * 0.01, radius * 0.03, radius * 0.032);
+    }
+  } else {
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(cx + side * radius * 0.36, eyeY - radius * 0.05);
+      ctx.quadraticCurveTo(
+        cx + side * radius * 0.22,
+        eyeY + radius * 0.05,
+        cx + side * radius * 0.09,
+        eyeY - radius * 0.01,
+      );
+      ctx.stroke();
+    }
+  }
+
+  ctx.strokeStyle = "rgba(188, 108, 80, 0.5)";
+  ctx.lineWidth = Math.max(1.2, radius * 0.013);
+  for (const side of [-1, 1]) {
+    for (let k = -1; k <= 1; k++) {
+      const bx = cx + side * (radius * 0.4 + k * radius * 0.018);
+      const by = cy + radius * 0.15 + k * radius * 0.028;
+      ctx.beginPath();
+      ctx.moveTo(bx - radius * 0.04, by);
+      ctx.lineTo(bx + radius * 0.04, by - radius * 0.012);
+      ctx.stroke();
+    }
+  }
+
+  ctx.strokeStyle = "#24180f";
+  ctx.lineWidth = Math.max(1.7, radius * 0.021);
   if (anger < 0.4) {
     ctx.beginPath();
-    ctx.ellipse(
-      cx - radius * 0.24 + eyeShiftX,
-      eyeY,
-      radius * 0.09,
-      radius * 0.07,
-      0,
-      0,
-      Math.PI * 2,
-    );
-    ctx.ellipse(
-      cx + radius * 0.24 + eyeShiftX,
-      eyeY,
-      radius * 0.09,
-      radius * 0.07,
-      0,
-      0,
-      Math.PI * 2,
-    );
+    ctx.moveTo(cx - radius * 0.16, cy + radius * 0.27);
+    ctx.quadraticCurveTo(cx - radius * 0.08, cy + radius * 0.35, cx, cy + radius * 0.29);
+    ctx.quadraticCurveTo(cx + radius * 0.08, cy + radius * 0.35, cx + radius * 0.16, cy + radius * 0.27);
     ctx.stroke();
-
-    ctx.fillStyle = "#24180f";
-    ctx.beginPath();
-    ctx.arc(cx - radius * 0.22 + eyeShiftX, eyeY, radius * 0.03, 0, Math.PI * 2);
-    ctx.arc(cx + radius * 0.26 + eyeShiftX, eyeY, radius * 0.03, 0, Math.PI * 2);
-    ctx.fill();
   } else {
     ctx.beginPath();
-    ctx.moveTo(cx - radius * 0.36, eyeY - radius * 0.04);
-    ctx.quadraticCurveTo(
-      cx - radius * 0.22,
-      eyeY + radius * 0.06,
-      cx - radius * 0.08,
-      eyeY - radius * 0.02,
-    );
-    ctx.moveTo(cx + radius * 0.36, eyeY - radius * 0.04);
-    ctx.quadraticCurveTo(
-      cx + radius * 0.22,
-      eyeY + radius * 0.06,
-      cx + radius * 0.08,
-      eyeY - radius * 0.02,
-    );
+    ctx.moveTo(cx - radius * 0.18, cy + radius * 0.25);
+    ctx.quadraticCurveTo(cx, cy + radius * 0.44, cx + radius * 0.18, cy + radius * 0.25);
+    ctx.quadraticCurveTo(cx, cy + radius * 0.19, cx - radius * 0.18, cy + radius * 0.25);
+    ctx.closePath();
+    ctx.fillStyle = "#5c2418";
+    ctx.fill();
     ctx.stroke();
   }
 
-  ctx.beginPath();
-  ctx.moveTo(cx - radius * 0.2, cy + radius * 0.28);
-  ctx.quadraticCurveTo(
-    cx,
-    cy + radius * (0.34 + anger * 0.08),
-    cx + radius * 0.2,
-    cy + radius * 0.28,
-  );
-  ctx.stroke();
   drawSprout(ctx, cx, cy, radius, "ink", time);
   ctx.restore();
 };
