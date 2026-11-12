@@ -48,7 +48,13 @@ const MAX_DPR = 3;
 const POKE_REACH = 70;
 
 const MOOD_LABELS = ["Calm", "Wary", "Annoyed", "Furious", "Meltdown"] as const;
-const MOOD_COLORS = ["bg-[#9ed37a]", "bg-[#9ed37a]", "bg-[#f0c96a]", "bg-[#e8896a]", "bg-[#e45c4c]"];
+const MOOD_COLORS = [
+  "bg-[#9ed37a]",
+  "bg-[#9ed37a]",
+  "bg-[#f0c96a]",
+  "bg-[#e8896a]",
+  "bg-[#e45c4c]",
+];
 const RAPID_POKE_MS = 1800;
 const PATIENCE_SEGMENTS = 5;
 
@@ -206,12 +212,21 @@ function drawSprout(
     ctx.translate(radius * 0.02, -stemHeight);
     ctx.rotate(side * (0.55 + sway * 0.4));
     ctx.beginPath();
-    ctx.ellipse(side * leafW * 0.62 * scale, -leafH * 0.35 * scale, leafW * scale, leafH * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      side * leafW * 0.62 * scale,
+      -leafH * 0.35 * scale,
+      leafW * scale,
+      leafH * scale,
+      0,
+      0,
+      Math.PI * 2,
+    );
     ctx.fillStyle = palette.leaf;
     ctx.fill();
     if (variant !== "soft") {
       ctx.strokeStyle = palette.line;
-      ctx.lineWidth = variant === "sticker" ? Math.max(2.5, radius * 0.04) : Math.max(1.4, radius * 0.018);
+      ctx.lineWidth =
+        variant === "sticker" ? Math.max(2.5, radius * 0.04) : Math.max(1.4, radius * 0.018);
       ctx.stroke();
     }
     ctx.beginPath();
@@ -354,13 +369,7 @@ const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =
     fillEllipse(ctx, 0, eyeRadius * 0.07, irisR * 0.5, irisR * 0.56);
 
     ctx.fillStyle = "#fff";
-    fillEllipse(
-      ctx,
-      -eyeRadius * 0.28,
-      -eyeRadius * 0.16,
-      eyeRadius * 0.17,
-      eyeRadius * 0.17,
-    );
+    fillEllipse(ctx, -eyeRadius * 0.28, -eyeRadius * 0.16, eyeRadius * 0.17, eyeRadius * 0.17);
     fillEllipse(ctx, eyeRadius * 0.26, eyeRadius * 0.24, eyeRadius * 0.085, eyeRadius * 0.085);
 
     ctx.strokeStyle = "rgba(74, 42, 24, 0.35)";
@@ -388,35 +397,35 @@ const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =
     ctx.beginPath();
     ctx.moveTo(cx - radius * 0.16, cy + radius * 0.27);
     ctx.quadraticCurveTo(cx - radius * 0.08, cy + radius * 0.36, cx, cy + radius * 0.29);
-    ctx.quadraticCurveTo(cx + radius * 0.08, cy + radius * 0.36, cx + radius * 0.16, cy + radius * 0.27);
+    ctx.quadraticCurveTo(
+      cx + radius * 0.08,
+      cy + radius * 0.36,
+      cx + radius * 0.16,
+      cy + radius * 0.27,
+    );
     ctx.stroke();
   } else {
     const openness = Math.min(1, (anger - 0.4) / 0.6);
+    const cornerY = cy + radius * (0.27 + 0.02 * openness);
+    const topY = cy + radius * (0.21 + 0.02 * openness);
+    const bottomY = cy + radius * (0.35 + 0.05 * openness);
     ctx.beginPath();
-    ctx.moveTo(cx - radius * 0.2, cy + radius * 0.24);
-    ctx.quadraticCurveTo(cx, cy + radius * 0.3, cx + radius * 0.2, cy + radius * 0.24);
-    ctx.quadraticCurveTo(
-      cx + radius * 0.05,
-      cy + radius * (0.4 + 0.12 * openness),
-      cx - radius * 0.2,
-      cy + radius * 0.24,
-    );
+    ctx.moveTo(cx - radius * 0.21, cornerY);
+    ctx.quadraticCurveTo(cx, topY - radius * 0.03, cx + radius * 0.21, cornerY);
+    ctx.quadraticCurveTo(cx + radius * 0.12, bottomY, cx, bottomY);
+    ctx.quadraticCurveTo(cx - radius * 0.12, bottomY, cx - radius * 0.21, cornerY);
     ctx.closePath();
-    ctx.fillStyle = "#5c2418";
+    ctx.fillStyle = "#4a1c14";
     ctx.fill();
 
-    ctx.fillStyle = "#e08078";
-    ctx.beginPath();
-    ctx.ellipse(
-      cx,
-      cy + radius * (0.34 + 0.08 * openness),
-      radius * 0.075,
-      radius * 0.038,
-      0,
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = "#fff4e0";
+    const toothW = radius * 0.085;
+    const toothH = radius * (0.065 + 0.02 * openness);
+    ctx.fillRect(cx - radius * 0.115, topY - radius * 0.02, toothW, toothH);
+    ctx.fillRect(cx + radius * 0.03, topY - radius * 0.02, toothW, toothH);
+    ctx.restore();
   }
 
   drawSprout(ctx, cx, cy, radius, "soft", time);
@@ -476,8 +485,10 @@ const drawPixel: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) 
     ctx.fillRect(px(1), py(3), b, b);
   } else {
     ctx.fillStyle = "#3a2414";
-    ctx.fillRect(px(-5) + eyeShift, py(-4) + eyeDrop, 2 * b, b);
+    ctx.fillRect(px(-4) + eyeShift, py(-4) + eyeDrop, 2 * b, b);
+    ctx.fillRect(px(-3) + eyeShift, py(-3) + eyeDrop, b, b);
     ctx.fillRect(px(3) + eyeShift, py(-4) + eyeDrop, 2 * b, b);
+    ctx.fillRect(px(2) + eyeShift, py(-3) + eyeDrop, b, b);
     ctx.fillRect(px(-2), py(2), 4 * b, 2 * b);
     ctx.fillStyle = "#fff6e6";
     ctx.fillRect(px(-2), py(2), b, b);
@@ -547,13 +558,7 @@ const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time
       ctx.fillStyle = "#2b1a10";
       fillEllipse(ctx, side * radius * 0.01, radius * 0.01, radius * 0.085, radius * 0.095);
       ctx.fillStyle = "#fff";
-      fillEllipse(
-        ctx,
-        -radius * 0.035,
-        -radius * 0.045,
-        radius * 0.032,
-        radius * 0.032,
-      );
+      fillEllipse(ctx, -radius * 0.035, -radius * 0.045, radius * 0.032, radius * 0.032);
       ctx.strokeStyle = "#2b1a10";
       ctx.lineWidth = Math.max(1.5, radius * 0.02);
       ctx.beginPath();
@@ -585,16 +590,16 @@ const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time
     ctx.fill();
   } else {
     ctx.beginPath();
-    ctx.moveTo(cx - radius * 0.19, cy + radius * 0.24);
-    ctx.quadraticCurveTo(cx, cy + radius * 0.42, cx + radius * 0.19, cy + radius * 0.24);
-    ctx.quadraticCurveTo(cx, cy + radius * 0.2, cx - radius * 0.19, cy + radius * 0.24);
+    ctx.moveTo(cx - radius * 0.19, cy + radius * 0.29);
+    ctx.quadraticCurveTo(cx, cy + radius * 0.43, cx + radius * 0.19, cy + radius * 0.29);
+    ctx.quadraticCurveTo(cx, cy + radius * 0.23, cx - radius * 0.19, cy + radius * 0.29);
     ctx.closePath();
     ctx.fillStyle = "#4a1710";
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = "#fffdf6";
-    ctx.fillRect(cx - radius * 0.11, cy + radius * 0.235, radius * 0.07, radius * 0.06);
-    ctx.fillRect(cx + radius * 0.04, cy + radius * 0.235, radius * 0.07, radius * 0.06);
+    ctx.fillRect(cx - radius * 0.11, cy + radius * 0.28, radius * 0.07, radius * 0.06);
+    ctx.fillRect(cx + radius * 0.04, cy + radius * 0.28, radius * 0.07, radius * 0.06);
   }
 
   drawSprout(ctx, cx, cy, radius, "sticker", time);
@@ -610,9 +615,7 @@ const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =>
   const points = 30;
   const at = (i: number) => {
     const angle = (i / points) * Math.PI * 2;
-    const edge =
-      radius *
-      (1 + inkWobble(i + cx * 0.01) + Math.sin(i * 0.7 + cy * 0.01) * 0.006);
+    const edge = radius * (1 + inkWobble(i + cx * 0.01) + Math.sin(i * 0.7 + cy * 0.01) * 0.006);
     return [cx + Math.cos(angle) * edge, cy + Math.sin(angle) * edge] as const;
   };
   for (let i = 0; i < points; i++) {
@@ -661,8 +664,8 @@ const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =>
 
   for (const side of [-1, 1]) {
     ctx.save();
-    ctx.translate(cx + side * radius * 0.25 + eyeShiftX * 0.4, eyeY - radius * 0.24);
-    ctx.rotate(-side * (0.05 + anger * 0.5));
+    ctx.translate(cx + side * radius * 0.25 + eyeShiftX * 0.4, eyeY - radius * 0.21);
+    ctx.rotate(-side * (0.05 + anger * 0.6));
     ctx.beginPath();
     ctx.moveTo(-radius * 0.11, radius * 0.02);
     ctx.quadraticCurveTo(0, -radius * 0.04, radius * 0.11, radius * 0.02);
@@ -681,15 +684,26 @@ const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =>
     }
   } else {
     for (const side of [-1, 1]) {
+      const ex = cx + side * radius * 0.24 + eyeShiftX;
+      ctx.save();
+      ctx.translate(ex, eyeY);
+      ctx.rotate(-side * 0.28);
       ctx.beginPath();
-      ctx.moveTo(cx + side * radius * 0.36, eyeY - radius * 0.05);
-      ctx.quadraticCurveTo(
-        cx + side * radius * 0.22,
-        eyeY + radius * 0.05,
-        cx + side * radius * 0.09,
-        eyeY - radius * 0.01,
-      );
+      ctx.ellipse(0, 0, radius * 0.105, radius * 0.055, 0, 0, Math.PI * 2);
       ctx.stroke();
+      ctx.fillStyle = "#24180f";
+      ctx.beginPath();
+      ctx.ellipse(
+        -side * radius * 0.02,
+        radius * 0.008,
+        radius * 0.028,
+        radius * 0.03,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      ctx.fill();
+      ctx.restore();
     }
   }
 
@@ -712,17 +726,29 @@ const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =>
     ctx.beginPath();
     ctx.moveTo(cx - radius * 0.16, cy + radius * 0.27);
     ctx.quadraticCurveTo(cx - radius * 0.08, cy + radius * 0.35, cx, cy + radius * 0.29);
-    ctx.quadraticCurveTo(cx + radius * 0.08, cy + radius * 0.35, cx + radius * 0.16, cy + radius * 0.27);
+    ctx.quadraticCurveTo(
+      cx + radius * 0.08,
+      cy + radius * 0.35,
+      cx + radius * 0.16,
+      cy + radius * 0.27,
+    );
     ctx.stroke();
   } else {
+    const mouthTop = cy + radius * 0.22;
+    const mouthBottom = cy + radius * 0.36;
     ctx.beginPath();
-    ctx.moveTo(cx - radius * 0.18, cy + radius * 0.25);
-    ctx.quadraticCurveTo(cx, cy + radius * 0.44, cx + radius * 0.18, cy + radius * 0.25);
-    ctx.quadraticCurveTo(cx, cy + radius * 0.19, cx - radius * 0.18, cy + radius * 0.25);
+    ctx.moveTo(cx - radius * 0.17, cy + radius * 0.29);
+    ctx.quadraticCurveTo(cx, mouthTop, cx + radius * 0.17, cy + radius * 0.29);
+    ctx.quadraticCurveTo(cx + radius * 0.09, mouthBottom, cx, mouthBottom);
+    ctx.quadraticCurveTo(cx - radius * 0.09, mouthBottom, cx - radius * 0.17, cy + radius * 0.29);
     ctx.closePath();
     ctx.fillStyle = "#5c2418";
     ctx.fill();
     ctx.stroke();
+
+    ctx.fillStyle = "#f6e7cf";
+    ctx.fillRect(cx - radius * 0.1, mouthTop + radius * 0.012, radius * 0.06, radius * 0.05);
+    ctx.fillRect(cx + radius * 0.04, mouthTop + radius * 0.012, radius * 0.06, radius * 0.05);
   }
 
   drawSprout(ctx, cx, cy, radius, "ink", time);
@@ -942,12 +968,13 @@ export function PotatoStage() {
       setHeat(streak);
 
       const lines = REACTIONS[streak];
-      const topBubble = state.bubbles.reduce((lowest, bubble) => Math.min(lowest, bubble.y), Infinity);
+      const topBubble = state.bubbles.reduce(
+        (lowest, bubble) => Math.min(lowest, bubble.y),
+        Infinity,
+      );
       state.bubbles.push({
         x: state.littleX,
-        y: Number.isFinite(topBubble)
-          ? topBubble - 34
-          : state.littleY - LITTLE_RADIUS - 10,
+        y: Number.isFinite(topBubble) ? topBubble - 34 : state.littleY - LITTLE_RADIUS - 10,
         life: 1,
         text: lines[Math.floor(Math.random() * lines.length)],
       });
@@ -1136,16 +1163,7 @@ export function PotatoStage() {
         });
       }
 
-      drawPotato(
-        ctx,
-        state.littleX,
-        state.littleY,
-        LITTLE_RADIUS,
-        0,
-        miniLookX,
-        miniLookY,
-        now,
-      );
+      drawPotato(ctx, state.littleX, state.littleY, LITTLE_RADIUS, 0, miniLookX, miniLookY, now);
 
       for (let i = state.bubbles.length - 1; i >= 0; i--) {
         const bubble = state.bubbles[i];
