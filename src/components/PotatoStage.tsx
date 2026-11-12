@@ -105,6 +105,12 @@ type Bubble = {
   text: string;
 };
 
+type BlinkTrack = {
+  start: number;
+  len: number;
+  nextAt: number;
+};
+
 type StageState = {
   width: number;
   height: number;
@@ -120,6 +126,8 @@ type StageState = {
   particles: Particle[];
   bubbles: Bubble[];
   motes: Mote[];
+  blink: BlinkTrack;
+  littleBlink: BlinkTrack;
 };
 
 type PotatoStyle = (
@@ -131,7 +139,19 @@ type PotatoStyle = (
   lookX: number,
   lookY: number,
   time: number,
+  blink: number,
 ) => void;
+
+function updateBlink(track: BlinkTrack, now: number) {
+  if (now >= track.nextAt) {
+    track.start = now;
+    track.len = 120 + Math.random() * 90;
+    track.nextAt = now + track.len + 2400 + Math.random() * 3600;
+  }
+  const progress = (now - track.start) / track.len;
+  if (progress < 0 || progress > 1) return 0;
+  return Math.sin(progress * Math.PI);
+}
 
 function lerp(from: number, to: number, t: number) {
   return from + (to - from) * t;
@@ -248,7 +268,7 @@ function drawSprout(
   ctx.restore();
 }
 
-const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) => {
+const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time, blink) => {
   const top = mixRgb(CALM_COLORS[0], ANGRY_COLORS[0], anger);
   const middle = mixRgb(CALM_COLORS[1], ANGRY_COLORS[1], anger);
   const bottom = mixRgb(CALM_COLORS[2], ANGRY_COLORS[2], anger);
@@ -346,6 +366,18 @@ const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =
   for (const side of [-1, 1]) {
     ctx.save();
     ctx.translate(cx + side * radius * 0.26 + eyeShiftX, eyeY);
+
+    if (blink > 0.55) {
+      ctx.strokeStyle = "#4a2e1c";
+      ctx.lineWidth = Math.max(2, radius * 0.03);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.arc(0, -eyeRadius * 0.5, eyeRadius * 0.85, Math.PI * 0.25, Math.PI * 0.75);
+      ctx.stroke();
+      ctx.restore();
+      continue;
+    }
+
     ctx.rotate(side * 0.04);
 
     ctx.fillStyle = "#fff8ee";
@@ -431,7 +463,7 @@ const drawSoft: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =
   drawSprout(ctx, cx, cy, radius, "soft", time);
 };
 
-const drawPixel: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) => {
+const drawPixel: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time, blink) => {
   const block = Math.max(3, Math.round(radius / 11));
 
   ctx.fillStyle = anger > 0.4 ? "#e07a4a" : "#d4a05a";
@@ -465,12 +497,18 @@ const drawPixel: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) 
   ctx.fillRect(px(-4), py(2), b, b);
   ctx.fillRect(px(3), py(2), b, b);
 
-  ctx.fillStyle = "#1a120c";
-  ctx.fillRect(px(-4) + eyeShift, py(-2) + eyeDrop, 2 * b, 2 * b);
-  ctx.fillRect(px(2) + eyeShift, py(-2) + eyeDrop, 2 * b, 2 * b);
-  ctx.fillStyle = "#fff6e6";
-  ctx.fillRect(px(-4) + eyeShift, py(-2) + eyeDrop, b, b);
-  ctx.fillRect(px(2) + eyeShift, py(-2) + eyeDrop, b, b);
+  if (blink > 0.55) {
+    ctx.fillStyle = "#1a120c";
+    ctx.fillRect(px(-4) + eyeShift, py(-1) + eyeDrop, 2 * b, b);
+    ctx.fillRect(px(2) + eyeShift, py(-1) + eyeDrop, 2 * b, b);
+  } else {
+    ctx.fillStyle = "#1a120c";
+    ctx.fillRect(px(-4) + eyeShift, py(-2) + eyeDrop, 2 * b, 2 * b);
+    ctx.fillRect(px(2) + eyeShift, py(-2) + eyeDrop, 2 * b, 2 * b);
+    ctx.fillStyle = "#fff6e6";
+    ctx.fillRect(px(-4) + eyeShift, py(-2) + eyeDrop, b, b);
+    ctx.fillRect(px(2) + eyeShift, py(-2) + eyeDrop, b, b);
+  }
 
   if (anger < 0.4) {
     ctx.fillStyle = "#3a2414";
@@ -498,7 +536,7 @@ const drawPixel: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) 
   drawSprout(ctx, cx, cy, radius, "pixel", time);
 };
 
-const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) => {
+const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time, blink) => {
   ctx.save();
   ctx.translate(4, 6);
   ctx.beginPath();
@@ -552,7 +590,14 @@ const drawSticker: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time
   for (const side of [-1, 1]) {
     ctx.save();
     ctx.translate(cx + side * radius * 0.24 + shiftX, eyeY);
-    if (anger < 0.4) {
+    if (blink > 0.55) {
+      ctx.strokeStyle = "#2b1a10";
+      ctx.lineWidth = Math.max(3, radius * 0.045);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.arc(0, -radius * 0.05, radius * 0.12, Math.PI * 0.2, Math.PI * 0.8);
+      ctx.stroke();
+    } else if (anger < 0.4) {
       ctx.fillStyle = "#fffdf6";
       fillEllipse(ctx, 0, 0, radius * 0.14, radius * 0.15);
       ctx.fillStyle = "#2b1a10";
@@ -609,7 +654,7 @@ function inkWobble(angle: number) {
   return Math.sin(angle * 12.3) * 0.012 + Math.sin(angle * 4.1) * 0.008;
 }
 
-const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) => {
+const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time, blink) => {
   ctx.save();
   ctx.beginPath();
   const points = 30;
@@ -673,7 +718,15 @@ const drawInk: PotatoStyle = (ctx, cx, cy, radius, anger, lookX, lookY, time) =>
     ctx.restore();
   }
 
-  if (anger < 0.4) {
+  if (blink > 0.55) {
+    for (const side of [-1, 1]) {
+      const ex = cx + side * radius * 0.24 + eyeShiftX;
+      ctx.beginPath();
+      ctx.moveTo(ex - radius * 0.085, eyeY + radius * 0.005);
+      ctx.quadraticCurveTo(ex, eyeY + radius * 0.055, ex + radius * 0.085, eyeY + radius * 0.005);
+      ctx.stroke();
+    }
+  } else if (anger < 0.4) {
     for (const side of [-1, 1]) {
       const ex = cx + side * radius * 0.24 + eyeShiftX;
       ctx.beginPath();
@@ -917,6 +970,8 @@ export function PotatoStage() {
       particles: [],
       bubbles: [],
       motes: [],
+      blink: { start: 0, len: 1, nextAt: 900 },
+      littleBlink: { start: 0, len: 1, nextAt: 2400 },
     };
 
     let frame = 0;
@@ -1113,7 +1168,8 @@ export function PotatoStage() {
       ctx.fillStyle = paper ? "#6b5344" : "#3a2618";
       ctx.fillRect(-ropeWidth / 2, 0, ropeWidth, centerY - radius + 2);
 
-      drawPotato(ctx, 0, centerY, radius, state.anger, state.lookX, state.lookY, now);
+      const blink = updateBlink(state.blink, now);
+      drawPotato(ctx, 0, centerY, radius, state.anger, state.lookX, state.lookY, now, blink);
 
       if (state.flash > 0.05) {
         ctx.beginPath();
@@ -1163,7 +1219,18 @@ export function PotatoStage() {
         });
       }
 
-      drawPotato(ctx, state.littleX, state.littleY, LITTLE_RADIUS, 0, miniLookX, miniLookY, now);
+      const littleBlink = updateBlink(state.littleBlink, now);
+      drawPotato(
+        ctx,
+        state.littleX,
+        state.littleY,
+        LITTLE_RADIUS,
+        0,
+        miniLookX,
+        miniLookY,
+        now,
+        littleBlink,
+      );
 
       for (let i = state.bubbles.length - 1; i >= 0; i--) {
         const bubble = state.bubbles[i];
