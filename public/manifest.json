@@ -3,7 +3,7 @@
   "short_name": "Potato",
   "description": "Nudge the little potato toward the big hanging one and poke it. It gets angry.",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/play",
   "scope": "/",
   "display": "standalone",
   "background_color": "#140e0b",
