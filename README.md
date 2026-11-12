@@ -7,6 +7,7 @@
 Move the little potato. Poke the big one. Watch the eyebrows happen.
 
 [![MIT License](https://img.shields.io/badge/license-MIT-C4965E?style=flat-square)](LICENSE)
+[![Live](https://img.shields.io/badge/play-live%20potato-C4965E?style=flat-square)](https://poke-the-potato.vercel.app/)
 [![React 19](https://img.shields.io/badge/react-19-C4965E?style=flat-square)](https://react.dev)
 [![Built with Vite](https://img.shields.io/badge/built%20with-Vite-C4965E?style=flat-square)](https://vite.dev)
 [![TanStack Start](https://img.shields.io/badge/TanStack-Start-C4965E?style=flat-square)](https://tanstack.com/start)
