@@ -81,6 +81,15 @@ type Particle = {
   life: number;
   size: number;
   color: string;
+  gravity?: number;
+};
+
+type Mote = {
+  x: number;
+  y: number;
+  r: number;
+  drift: number;
+  phase: number;
 };
 
 type Bubble = {
@@ -104,6 +113,7 @@ type StageState = {
   ready: boolean;
   particles: Particle[];
   bubbles: Bubble[];
+  motes: Mote[];
 };
 
 type PotatoStyle = (
@@ -880,6 +890,7 @@ export function PotatoStage() {
       ready: false,
       particles: [],
       bubbles: [],
+      motes: [],
     };
 
     let frame = 0;
@@ -900,6 +911,18 @@ export function PotatoStage() {
         state.mouseX = state.littleX;
         state.mouseY = state.littleY;
         state.ready = true;
+      }
+
+      if (state.motes.length === 0) {
+        for (let i = 0; i < 16; i++) {
+          state.motes.push({
+            x: Math.random() * state.width,
+            y: Math.random() * state.height,
+            r: 1 + Math.random() * 2.2,
+            drift: 0.08 + Math.random() * 0.22,
+            phase: Math.random() * Math.PI * 2,
+          });
+        }
       }
     };
 
@@ -1001,6 +1024,7 @@ export function PotatoStage() {
       const drawPotato = POTATO_STYLES[currentStyle];
       const [backgroundTop, backgroundBottom] = BACKGROUNDS[currentStyle];
       const paper = currentStyle === "ink" || currentStyle === "sticker";
+      const now = performance.now();
 
       ctx.clearRect(0, 0, width, height);
 
@@ -1016,6 +1040,21 @@ export function PotatoStage() {
       backdrop.addColorStop(1, backgroundBottom);
       ctx.fillStyle = backdrop;
       ctx.fillRect(0, 0, width, height);
+
+      for (const mote of state.motes) {
+        mote.y -= mote.drift;
+        mote.x += Math.sin(now * 0.0004 + mote.phase) * 0.16;
+        if (mote.y < -10) {
+          mote.y = height + 10;
+          mote.x = Math.random() * width;
+        }
+        ctx.globalAlpha = paper ? 0.28 : 0.24;
+        ctx.fillStyle = paper ? "#8a6a44" : "#ffe9c2";
+        ctx.beginPath();
+        ctx.arc(mote.x, mote.y, mote.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
 
       const centerX = width / 2;
       const centerY = Math.min(height * 0.46, 340);
@@ -1035,7 +1074,6 @@ export function PotatoStage() {
       if (state.anger < 0.012) state.anger = 0;
       state.flash *= 0.9;
 
-      const now = performance.now();
       const sway =
         Math.sin(now * 0.0011) * 0.018 +
         Math.sin(now * 0.00063 + 1.7) * 0.01 +
@@ -1064,7 +1102,7 @@ export function PotatoStage() {
         const particle = state.particles[i];
         particle.x += particle.vx;
         particle.y += particle.vy;
-        particle.vy += 0.16;
+        particle.vy += particle.gravity ?? 0.16;
         particle.life -= 0.018;
         if (particle.life <= 0) {
           state.particles.splice(i, 1);
@@ -1076,7 +1114,38 @@ export function PotatoStage() {
         ctx.globalAlpha = 1;
       }
 
-      drawPotato(ctx, state.littleX, state.littleY, LITTLE_RADIUS, 0, 0, 0, now);
+      const miniDx = state.mouseX - state.littleX;
+      const miniDy = state.mouseY - state.littleY;
+      const miniLookX = Math.max(-1, Math.min(1, miniDx / 70));
+      const miniLookY = Math.max(-1, Math.min(1, miniDy / 70));
+
+      if (
+        Math.hypot(miniDx, miniDy) > 55 &&
+        state.particles.length < MAX_PARTICLES &&
+        Math.random() < 0.35
+      ) {
+        state.particles.push({
+          x: state.littleX + (Math.random() - 0.5) * 18,
+          y: state.littleY + (Math.random() - 0.5) * 18,
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: -0.3 - Math.random() * 0.5,
+          life: 0.75,
+          size: 1.5 + Math.random() * 1.8,
+          color: Math.random() > 0.5 ? "#ffe8b4" : "#fffaf0",
+          gravity: 0.015,
+        });
+      }
+
+      drawPotato(
+        ctx,
+        state.littleX,
+        state.littleY,
+        LITTLE_RADIUS,
+        0,
+        miniLookX,
+        miniLookY,
+        now,
+      );
 
       for (let i = state.bubbles.length - 1; i >= 0; i--) {
         const bubble = state.bubbles[i];
