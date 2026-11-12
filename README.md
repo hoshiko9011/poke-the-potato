@@ -26,7 +26,7 @@ Move the little potato. Poke the big one. Watch the eyebrows happen.
 
 ---
 
-![Soft style](screenshots/styles-soft.png)
+![Soft style](public/screenshots/styles-soft.png)
 
 ## Once upon a potato
 
@@ -46,13 +46,13 @@ waiting. Switching moods is instant, and the whole potato is redrawn every frame
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="screenshots/styles-soft.png" alt="Soft style" width="100%" />
+      <img src="public/screenshots/styles-soft.png" alt="Soft style" width="100%" />
       <br />
       <b>Soft</b><br />
       Warm, buttery, gently shaded.
     </td>
     <td align="center" width="50%">
-      <img src="screenshots/style-pixel.png" alt="Pixel style" width="100%" />
+      <img src="public/screenshots/style-pixel.png" alt="Pixel style" width="100%" />
       <br />
       <b>Pixel</b><br />
       Chunky blocks and quiet nostalgia.
@@ -60,13 +60,13 @@ waiting. Switching moods is instant, and the whole potato is redrawn every frame
   </tr>
   <tr>
     <td align="center" width="50%">
-      <img src="screenshots/style-sticker.png" alt="Sticker style" width="100%" />
+      <img src="public/screenshots/style-sticker.png" alt="Sticker style" width="100%" />
       <br />
       <b>Sticker</b><br />
       Thick outlines, zero regrets.
     </td>
     <td align="center" width="50%">
-      <img src="screenshots/style-ink.png" alt="Ink style" width="100%" />
+      <img src="public/screenshots/style-ink.png" alt="Ink style" width="100%" />
       <br />
       <b>Ink</b><br />
       Wobbly lines on warm paper.
@@ -118,8 +118,9 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:8080>. The dev server is bound to `0.0.0.0:8080`, so you can also open it
-from your phone on the same network.
+Open <http://localhost:8080> for the landing page, or go straight to
+<http://localhost:8080/play> to poke the potato. The dev server is bound to `0.0.0.0:8080`, so you
+can also open it from your phone on the same network.
 
 ## Build it
 
@@ -152,16 +153,17 @@ This toy was tuned on a Redmi-class Android phone, because that is where potatoe
 src/
   components/PotatoStage.tsx   the whole toy: four art styles, poke physics, particles
   routes/__root.tsx            document shell, social cards, PWA links
-  routes/index.tsx             the stage itself
+  routes/index.tsx             the landing page
+  routes/play.tsx              the game itself
   lib/error-component.tsx      a graceful "oops" screen
   router.tsx                   TanStack Router setup
-  styles.css                   page reset and mobile scroll rules
+  styles.css                   page reset and game-mode scroll rules
 public/
   manifest.json                installable web app manifest
   icon.png                     the potato in app-icon form
   favicon.svg                  the potato in tiny form
   og.jpg, x-banner.jpg         social preview cards
-screenshots/                   the four moods, plus a phone-sized soft potato
+public/screenshots/            the four moods, a clean hero, and a phone-sized potato
 ```
 
 ## Scripts
