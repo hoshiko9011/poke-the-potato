@@ -1,0 +1,19 @@
+{
+  "name": "Poke the Potato",
+  "short_name": "Potato",
+  "description": "Nudge the little potato toward the big hanging one and poke it. It gets angry.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#140e0b",
+  "theme_color": "#140e0b",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

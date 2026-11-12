@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.0 – Standalone potato (2026-11-12)
+
+- Restored the missing canvas engine (the four art styles, poke reaction, particles, and gaze)
+- Removed all generated app-builder scaffolding, platform hooks, and build artifacts
+- Replaced the platform-specific PWA/OG middleware with a plain `manifest.webmanifest`
+- Added a proper potato app icon, social cards, and an MIT license
+- Pruned unused dependencies and simplified the Vite, TypeScript, and ESLint configs
+- Kept the little potato on screen when poked near an edge
+- Moved the hint text into the DOM so it respects safe-area insets
+- Kept the v1.1.0 mobile polish: DPR up to 3, haptics, 44px touch targets, particle cap
+
 ## v1.1.0 – Mobile / Redmi polish (2026-11-12)
 
 - Sharper canvas on high-DPI screens (DPR up to 3)
