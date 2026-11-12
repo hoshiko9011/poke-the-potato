@@ -12,17 +12,6 @@ Move the little potato. Poke the big one. Watch the eyebrows happen.
 [![Built with Vite](https://img.shields.io/badge/built%20with-Vite-C4965E?style=flat-square)](https://vite.dev)
 [![TanStack Start](https://img.shields.io/badge/TanStack-Start-C4965E?style=flat-square)](https://tanstack.com/start)
 
-```text
-         |
-         |
-        \|/
-      .-"""-.
-     /  . .  \
-    |  (o o)  |         <- the big one (do not poke)
-     \  \_/  /
-      `-----'
-```
-
 </div>
 
 ---
